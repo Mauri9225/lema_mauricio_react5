@@ -37,27 +37,38 @@ function App() {
     }
   };
 
-  // 💾 Crear / actualizar
-  const handleSaveReminder = async (data) => {
-    try {
-      if (selectedReminder) {
-        await reminderService.update(selectedReminder.id, data);
-        setAlert({ type: "success", message: "Recordatorio actualizado" });
-      } else {
-        await reminderService.create(data);
-        setAlert({ type: "success", message: "Recordatorio creado" });
-      }
 
-      setShowForm(false);
-      setSelectedReminder(null);
-      loadReminders();
-    } catch (error) {
-      setAlert({
-        type: "error",
-        message: "No se pudo guardar el recordatorio",
-      });
+
+  // 💾 Crear / actualizar
+const handleSaveReminder = async (data) => {
+  const payload = {
+    title: data.title,
+    description: data.description,
+    due_at: new Date(data.dueDate).toISOString(),
+    priority: data.priority,
+    status: data.status,
+  }
+
+  try {
+    if (selectedReminder) {
+      await reminderService.update(selectedReminder.id, payload)
+      setAlert({ type: "success", message: "Recordatorio actualizado" })
+    } else {
+      await reminderService.create(payload)
+      setAlert({ type: "success", message: "Recordatorio creado" })
     }
-  };
+
+    setShowForm(false)
+    setSelectedReminder(null)
+    loadReminders()
+  } catch (error) {
+    setAlert({
+      type: "error",
+      message: "No se pudo guardar el recordatorio",
+    })
+  }
+}
+
 
   // ✏️ Editar
   const handleEdit = (reminder) => {
@@ -159,20 +170,20 @@ function App() {
           <ul className="space-y-4">
             {reminders.map((reminder) => (
               
-                <li className="grid grid-cols-6 gap-4 bg-white p-4 rounded-lg shadow items-center text-sm">
+                <li
+    key={reminder.id}
+    className="grid grid-cols-6 gap-4 bg-white p-4 rounded-lg shadow items-center text-sm"
+  >
 
       
                   {/* DATOS */}
   <span className="font-medium">{reminder.title}</span>
   <span>{reminder.description}</span>
   <span>
-  {reminder.dueDate && !isNaN(new Date(reminder.dueDate))
-    ? new Date(reminder.dueDate).toLocaleString("es-EC", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+  {reminder.due_at
+    ? new Date(reminder.due_at).toLocaleString("es-EC", {
+        dateStyle: "short",
+        timeStyle: "short",
       })
     : "Sin fecha"}
 </span>

@@ -15,41 +15,49 @@ export default function ReminderForm({ onSubmit, onCancel, initialData }) {
   const [errors, setErrors] = useState({});
 
   // ✅ VALIDACIÓN
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = "El título es requerido";
-    } else if (formData.title.length < 3) {
-      newErrors.title = "El título debe tener al menos 3 caracteres";
-    } else if (formData.title.length > 80) {
-      newErrors.title = "El título no puede exceder 80 caracteres";
-    }
-
-    if (formData.description && formData.description.length > 300) {
-      newErrors.description = "La descripción no puede exceder 300 caracteres";
-    }
-
-    if (!formData.dueDate) {
-      newErrors.dueDate = "La fecha de vencimiento es requerida";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
+  function validate() {
+  const newErrors = {};
+  
+  // Validar título
+  if (!formData.title.trim()) {
+    newErrors.title = 'El título es requerido';
+  } else if (formData.title.length < 3) {
+    newErrors.title = 'El título debe tener al menos 3 caracteres';
+  } else if (formData.title.length > 80) {
+    newErrors.title = 'El título no puede exceder 80 caracteres';
+  }
+  
+  // Validar descripción (opcional pero con límite)
+  if (formData.description && formData.description.length > 300) {
+    newErrors.description = 'La descripción no puede exceder 300 caracteres';
+  }
+  
+  // Validar fecha
+  if (!formData.due_at) {
+    newErrors.due_at = 'La fecha de vencimiento es requerida';
+  }
+  
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+}
   // 🔘 SUBMIT
-  const handleSubmit = (e) => {
+ const handleSubmit = (e) => {
   e.preventDefault()
+  console.log('Submitting form with data:', formData)
   if (!validate()) return
 
   const formattedData = {
     ...formData,
-    dueDate: new Date(formData.dueDate).toISOString(),
+    dueDate: formData.dueDate
+      ? new Date(formData.dueDate).toISOString()
+      : null,
+
+      
   }
 
   onSubmit(formattedData)
 }
+
 
 
   return (
