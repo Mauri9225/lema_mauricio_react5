@@ -1,134 +1,209 @@
-import { useEffect, useState } from "react"
-import reminderService from "./services/mockReminderService"
-/*import reminderService from "./services/reminderService"*/
-import ReminderForm from "./components/ReminderForm"
-import ReminderList from "./components/ReminderList"
-import Button from "./components/Button"
-import Modal from "./components/Modal"
+/*import reminderService from "./services/mockReminderService"*/
+import { useEffect, useState } from "react";
+import { reminderService } from "./services/api";
+
+import ReminderForm from "./components/ReminderForm";
+import Alert from "./components/Alert";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 function App() {
-  const [reminders, setReminders] = useState([])
-  const [showForm, setShowForm] = useState(false)
-  const [selectedReminder, setSelectedReminder] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [reminders, setReminders] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // 🔄 Cargar recordatorios al iniciar
+  const [alert, setAlert] = useState({
+    type: "",
+    message: "",
+  });
+
+  // 🔄 Cargar recordatorios
   useEffect(() => {
-    loadReminders()
-  }, [])
+    loadReminders();
+  }, []);
 
   const loadReminders = async () => {
-    setLoading(true)
-    setError("")
+    setLoading(true);
     try {
-      const response = await reminderService.getAll()
-      setReminders(response.data)
-    } catch (err) {
-      setError("Error al cargar los recordatorios")
+      const response = await reminderService.getAll();
+      setReminders(response.data || []);
+    } catch (error) {
+      setAlert({
+        type: "error",
+        message: "Error al cargar los recordatorios",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  // 💾 Crear o actualizar recordatorio
+  // 💾 Crear / actualizar
   const handleSaveReminder = async (data) => {
     try {
       if (selectedReminder) {
-        await reminderService.update(selectedReminder.id, data)
+        await reminderService.update(selectedReminder.id, data);
+        setAlert({ type: "success", message: "Recordatorio actualizado" });
       } else {
-        await reminderService.create(data)
+        await reminderService.create(data);
+        setAlert({ type: "success", message: "Recordatorio creado" });
       }
 
-      await loadReminders()
-      setShowForm(false)
-      setSelectedReminder(null)
-    } catch (err) {
-      setError("No se pudo guardar el recordatorio")
+      setShowForm(false);
+      setSelectedReminder(null);
+      loadReminders();
+    } catch (error) {
+      setAlert({
+        type: "error",
+        message: "No se pudo guardar el recordatorio",
+      });
     }
-  }
+  };
 
   // ✏️ Editar
   const handleEdit = (reminder) => {
-    setSelectedReminder(reminder)
-    setShowForm(true)
-  }
+    setSelectedReminder(reminder);
+    setShowForm(true);
+  };
 
   // 🗑️ Eliminar
   const handleDelete = async (id) => {
-    if (!confirm("¿Deseas eliminar este recordatorio?")) return
+    if (!confirm("¿Deseas eliminar este recordatorio?")) return;
 
     try {
-      await reminderService.delete(id)
-      await loadReminders()
-    } catch (err) {
-      setError("No se pudo eliminar el recordatorio")
+      await reminderService.delete(id);
+      setAlert({ type: "success", message: "Recordatorio eliminado" });
+      loadReminders();
+    } catch (error) {
+      setAlert({
+        type: "error",
+        message: "No se pudo eliminar el recordatorio",
+      });
     }
-  }
+  };
 
   // ❌ Cancelar formulario
   const handleCancel = () => {
-    setShowForm(false)
-    setSelectedReminder(null)
-  }
+    setShowForm(false);
+    setSelectedReminder(null);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-6">
 
-      {/* HEADER */}
-      <header className="max-w-6xl mx-auto flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-indigo-600">
-          Gestión de Recordatorios
-        </h1>
+      <div className="max-w-5xl mx-auto">
 
-        {!showForm && (
-          <Button
-            text="+ Nuevo recordatorio"
-            type="primary"
-            onClick={() => setShowForm(true)}
-          />
-        )}
-      </header>
+        {/* ALERTA */}
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert({ type: "", message: "" })}
+        />
 
-      {/* CONTENIDO */}
-      <main className="max-w-6xl mx-auto">
+        {/* HEADER */}
+        <header className="flex justify-between items-center mb-6 bg-white px-6 py-4 rounded-xl shadow">
+  <h1 className="text-xl font-bold text-purple-700">
+    Gestión de Recordatorios
+  </h1>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        {loading && (
-          <p className="text-center text-gray-600">
-            Cargando recordatorios...
-          </p>
-        )}
-
-        {/* FORMULARIO */}
-        {showForm && (
-  <Modal onClose={handleCancel}>
-    <ReminderForm
-      onSubmit={handleSaveReminder}
-      onCancel={handleCancel}
-      initialData={selectedReminder}
-    />
-  </Modal>
-)}
+  {!showForm && (
+    <button
+      onClick={() => setShowForm(true)}
+      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+    >
+      + Nuevo Recordatorio
+    </button>
+  )}
+</header>
 
 
-        {/* LISTA */}
-        {!loading && (
-          <ReminderList
-            reminders={reminders}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        )}
+        {/* CONTENIDO */}
+        <main>
+          {loading && <LoadingSpinner />}
 
-      </main>
+          {/* FORMULARIO */}
+          {showForm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+    
+    {/* Fondo oscuro */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      onClick={handleCancel}
+    ></div>
+
+    {/* Formulario centrado */}
+    <div className="relative z-10 w-full max-w-lg">
+              <ReminderForm
+                onSubmit={handleSaveReminder}
+                onCancel={handleCancel}
+                initialData={selectedReminder}
+              />
+            </div>
+            </div>
+          )}
+
+          {/* LISTA */}
+          {!loading && reminders.length === 0 && (
+            <p className="text-center text-gray-500">
+              No hay recordatorios registrados
+            </p>
+          )}
+  {/* ENCABEZADOS */}
+<div className="grid grid-cols-6 gap-4 bg-gray-100 px-4 py-3 rounded-lg text-sm font-semibold text-gray-600 mb-2">
+  <span>Título</span>
+  <span>Descripción</span>
+  <span>Vencimiento</span>
+  <span>Prioridad</span>
+  <span>Estado</span>
+  <span>Acción</span>
+</div>
+          <ul className="space-y-4">
+            {reminders.map((reminder) => (
+              
+                <li className="grid grid-cols-6 gap-4 bg-white p-4 rounded-lg shadow items-center text-sm">
+
+      
+                  {/* DATOS */}
+  <span className="font-medium">{reminder.title}</span>
+  <span>{reminder.description}</span>
+  <span>
+  {reminder.dueDate && !isNaN(new Date(reminder.dueDate))
+    ? new Date(reminder.dueDate).toLocaleString("es-EC", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Sin fecha"}
+</span>
+
+
+
+  <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-700">
+    {reminder.priority}
+  </span>
+
+  <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
+    {reminder.status}
+  </span>
+
+  <div className="flex gap-2">
+    <button onClick={() => handleEdit(reminder)}>✏️</button>
+    <button onClick={() => handleDelete(reminder.id)}>🗑️</button>
+  </div>
+</li>
+
+            ))}
+          </ul>
+        </main>
+
+        {/* FOOTER */}
+        <footer className="mt-10 border-t pt-4 text-center text-sm text-gray-500">
+          © 2026 Pontificia Universidad Católica del Ecuador
+        </footer>
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

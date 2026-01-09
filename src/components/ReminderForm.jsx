@@ -1,53 +1,59 @@
-import { useState } from "react"
-import Button from "./Button"
+import { useState } from "react";
 
 export default function ReminderForm({ onSubmit, onCancel, initialData }) {
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     description: initialData?.description || "",
-    dueDate: initialData?.dueDate || "",
+    dueDate: initialData?.dueDate
+  ? initialData.dueDate.slice(0, 16)
+  : "",
+
     priority: initialData?.priority || "MEDIUM",
     status: initialData?.status || "PENDING",
-  })
+  });
 
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
 
-  // ✅ FUNCIÓN DE VALIDACIÓN
-  function validate() {
-    const newErrors = {}
+  // ✅ VALIDACIÓN
+  const validate = () => {
+    const newErrors = {};
 
-    // Título
     if (!formData.title.trim()) {
-      newErrors.title = "El título es requerido"
+      newErrors.title = "El título es requerido";
     } else if (formData.title.length < 3) {
-      newErrors.title = "El título debe tener al menos 3 caracteres"
+      newErrors.title = "El título debe tener al menos 3 caracteres";
     } else if (formData.title.length > 80) {
-      newErrors.title = "El título no puede exceder 80 caracteres"
+      newErrors.title = "El título no puede exceder 80 caracteres";
     }
 
-    // Descripción (opcional)
     if (formData.description && formData.description.length > 300) {
-      newErrors.description = "La descripción no puede exceder 300 caracteres"
+      newErrors.description = "La descripción no puede exceder 300 caracteres";
     }
 
-    // Fecha
     if (!formData.dueDate) {
-      newErrors.dueDate = "La fecha de vencimiento es requerida"
+      newErrors.dueDate = "La fecha de vencimiento es requerida";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // 🔘 SUBMIT
   const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!validate()) return
-    onSubmit(formData)
+  e.preventDefault()
+  if (!validate()) return
+
+  const formattedData = {
+    ...formData,
+    dueDate: new Date(formData.dueDate).toISOString(),
   }
 
+  onSubmit(formattedData)
+}
+
+
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white rounded-xl shadow-xl">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-indigo-600">
@@ -81,7 +87,9 @@ export default function ReminderForm({ onSubmit, onCancel, initialData }) {
           />
           <div className="flex justify-between text-xs mt-1">
             <span className="text-red-600">{errors.title}</span>
-            <span className="text-gray-500">{formData.title.length}/80</span>
+            <span className="text-gray-500">
+              {formData.title.length}/80
+            </span>
           </div>
         </div>
 
@@ -162,18 +170,22 @@ export default function ReminderForm({ onSubmit, onCancel, initialData }) {
 
         {/* BOTONES */}
         <div className="flex justify-end gap-3 pt-4">
-          <Button
-            text="Cancelar"
-            type="secondary"
+          <button
+            type="button"
             onClick={onCancel}
-          />
-          <Button
-            text="Guardar"
-            type="primary"
-            buttonType="submit"
-          />
+            className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            Guardar
+          </button>
         </div>
       </form>
     </div>
-  )
+  );
 }
