@@ -25,7 +25,7 @@ const ReminderForm = ({ reminder, onSubmit, onCancel }) => {
     }
   }, [reminder]);
 
-  // Función de validación requerida por el enunciado
+  // Función de validación del formulario
   const validate = () => {
     const newErrors = {};
     const now = new Date();
@@ -72,7 +72,7 @@ const ReminderForm = ({ reminder, onSubmit, onCancel }) => {
         <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">Título *</label>
         <input 
           type="text" 
-          placeholder="Ej: Estudiar para el examen"
+          placeholder="Ej: sacar la basura"
           className={`w-full p-2.5 border rounded-lg outline-none focus:ring-2 transition-all ${
             errors.title ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-500'
           }`}
@@ -116,6 +116,7 @@ const ReminderForm = ({ reminder, onSubmit, onCancel }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
+        
         {/* Prioridad */}
         <div>
           <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">Prioridad *</label>

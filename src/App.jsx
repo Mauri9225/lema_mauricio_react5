@@ -76,8 +76,6 @@ const App = () => {
     }
   };
 
-// Busca la función handleSubmit dentro de tu App.jsx y reemplázala por esta:
-
 const handleSubmit = async (formData) => {
   setLoading(true);
   try {
@@ -153,6 +151,8 @@ const handleEdit = (reminder) => {
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
   <table className="w-full text-left border-collapse">
+   
+   {/*Enunciados*/}
     <thead>
       <tr className="bg-gray-50 border-b border-gray-100">
         <th className="p-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Estado</th>
@@ -175,6 +175,8 @@ const handleEdit = (reminder) => {
           <td className="p-4"><span className={statusStyles[r.status]}>{r.status}</span></td>
           <td className="p-4">
             <div className="flex gap-2">
+
+              {/*Botones de edición y eliminación*/}
               <button onClick={() => handleEdit(r)} className="text-indigo-400 hover:text-indigo-600">✎</button>
               <button onClick={() => handleDelete(r.id)} className="text-red-300 hover:text-red-500">✕</button>
             </div>
@@ -187,7 +189,7 @@ const handleEdit = (reminder) => {
           )}
         </main>
 
-        {/* FOOTER (Ubicación solicitada) */}
+        {/* FOOTER*/}
         <footer className="mt-16 text-center text-gray-400 text-xs font-medium pb-10">
           © 2026 PUCE - Mauricio Lema
         </footer>
